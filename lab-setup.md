@@ -166,6 +166,8 @@ scrollback.
 - **DNS:** `10.10.5.10` (DC01)
 - **Gateway:** none — same flat subnet as the rest of the lab
 
+![ubuntu_ip](images/ubuntu_ip.png)
+
 Internet access (required only for the initial package download) was provided by 
 temporarily switching the VM's network adapter to NAT, then reverting to the 
 host-only VMnet15 adapter once installation completed, to keep the SIEM on the 
