@@ -177,6 +177,8 @@ The Wazuh web dashboard is accessible from the host machine's browser at
 time. The dashboard uses a self-signed certificate by default, resulting in an 
 expected browser trust warning on first connection.
 
+![wazuh_dashboard](images/wazuh_dashboard.png)
+
 ### Agent deployment
 Wazuh agents were deployed to both DC01 and the Windows 10 client using the 
 dashboard's built-in agent deployment wizard (**Agents → Deploy new agent**), 
