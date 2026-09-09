@@ -119,6 +119,8 @@ users do not have RDP access by default.
 
 ![Dante_Info](images/Dante_Info.png)
 
+![dante](images/dante.png)
+
 ### Remote access configuration
 Remote Desktop (RDP, port 3389) was enabled to support both legitimate remote 
 administration and the planned attack simulation. Network Level Authentication 
