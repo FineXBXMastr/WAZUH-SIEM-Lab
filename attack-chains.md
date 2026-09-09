@@ -26,8 +26,9 @@ up on the network:
 nmap -sn 10.10.5.0/24
 \`\`\`
 
-A targeted scan to initiate service discovery on the domain controller:
-This is done to ensure port 3389 is open for brute forcing:
+A targeted scan to initiate service discovery with the 
+-sV flag on the domain controller.
+This is done to ensure port 3389 is open for brute forcing.
 You could also scan just port 3389:
 
 \`\`\`bash
@@ -36,12 +37,23 @@ nmap -sV 10.10.5.10 or nmap -p 3389 10.10.5.10
 
 ![nmap_1](images/nmap_1.png)
 
+Another scan was initiated on the client. This information can be used to 
+demonstrate the importance of secure passwords (the client has a less 
+secure password than the server):
+
+\`\`\`bash
+nmap -sV 10.10.5.11
+\`\`\`
+
+![nmap_2](images/nmap_2.png)
+
 ---
 
 ### Step 2 — Brute force
 
 Hydra was used to attempt authentication against the target's RDP service using 
-the `rockyou.txt` wordlist against a known domain username:
+the `rockyou.txt` wordlist against a known domain username. Rockyou can be un-
+packed from the wordlists directory on Kali by default:
 
 \`\`\`bash
 hydra -l dante -P /usr/share/wordlists/rockyou.txt rdp://10.10.5.11 -t 1 -V -I
@@ -63,6 +75,12 @@ hydra -l dante -P /usr/share/wordlists/rockyou.txt rdp://10.10.5.11 -t 1 -V -I
 Hydra successfully identified the correct credentials after a small number of 
 attempts.
 
+![hydra](images/hydra.png)
+
+This password was then used to connect to the client remotely with xfreerdp:
+
+![xfreerdp](images/xfreerdp.png)
+
 ---
 
 ### Step 3 — Detection in Wazuh
@@ -72,24 +90,20 @@ two distinct stages:
 
 **Failed authentication attempts:**
 Each incorrect password guess generated a Windows Security Event (Logon Failure), 
-surfaced by Wazuh as:
+surfaced by Wazuh as seen here:
 
-| Rule ID | Level | Description |
-|---|---|---|
-| 60122 | 5 | Logon Failure - Unknown user or bad password |
+![wazuh_1](images/wazuh_1.png)
 
+The same attack was performed on the server, which has a more secure password,
+generating even more logs:
 
+![wazuh_2](images/wazuh_2.png)
 
 **Successful authentication:**
 Immediately following the failed attempts, a successful logon event appeared, 
 confirming the compromise:
 
-- **Rule description:** Windows Workstation Logon Success
-- **Logon type:** 10 (RemoteInteractive — consistent with an RDP session)
-- **Source IP:** `10.10.5.12` (Kali)
-- **Target account:** `dante`
-
-
+![wazuh_3](images/wazuh_3.png)
 
 This failure-then-success pattern — many authentication failures from a single 
 source IP followed immediately by a successful logon from that same source — is 
