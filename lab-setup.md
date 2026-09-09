@@ -115,6 +115,8 @@ documented in [Attack Chains](attack-chains.md). Dante was added to the local
 **Remote Desktop Users** group on the client to permit RDP logons, since domain 
 users do not have RDP access by default.
 
+![Dante_Info](images/Dante_Info.png)
+
 ### Remote access configuration
 Remote Desktop (RDP, port 3389) was enabled to support both legitimate remote 
 administration and the planned attack simulation. Network Level Authentication 
