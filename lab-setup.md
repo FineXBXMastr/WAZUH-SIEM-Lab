@@ -59,6 +59,8 @@ new forest and domain:
   parent DNS zone)
 - A DSRM (Directory Services Restore Mode) password was set for recovery purposes
 
+![promotion](images/promotion.png)
+
 ![domain](images/domain.png)
 
 ### Post-promotion hardening/cleanup
@@ -117,7 +119,7 @@ documented in [Attack Chains](attack-chains.md). Dante was added to the local
 **Remote Desktop Users** group on the client to permit RDP logons, since domain 
 users do not have RDP access by default.
 
-![Dante_Info](images/Dante_Info.png)
+![dante-creation](images/dante_creation.png)
 
 ![dante](images/dante.png)
 
