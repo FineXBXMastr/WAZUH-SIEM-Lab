@@ -194,6 +194,8 @@ NET START WazuhSvc
 
 ![powershell](images/powershell.png)
 
+![powershell](images/powershell2.png)
+
 Agent connectivity was verified via the dashboard's **Agents** view, confirming 
 an **Active** status for each host.
 
