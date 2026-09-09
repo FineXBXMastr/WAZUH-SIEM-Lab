@@ -59,6 +59,8 @@ new forest and domain:
   parent DNS zone)
 - A DSRM (Directory Services Restore Mode) password was set for recovery purposes
 
+![domain](images/domain.png)
+
 ### Post-promotion hardening/cleanup
 - The default password complexity policy (Default Domain Policy) initially blocked 
   promotion due to a non-compliant local Administrator password; this was resolved 
@@ -206,4 +208,40 @@ The Wazuh manager serves as the central log aggregation and detection point for
 the lab, ingesting Windows Security Event Log data from DC01 and the client. Its 
 default ruleset — without any custom rule authoring — was sufficient to detect 
 the RDP brute-force and subsequent privilege escalation activity documented in 
+[Attack Chains](attack-chains.md).
+
+---
+
+## Attacker — Kali Linux
+
+### Base install
+- **OS:** Kali Linux (standard install)
+- **Resources:** 2 vCPUs, 2GB RAM, dynamically-allocated virtual disk
+- **Networking:** VMware Workstation host-only adapter (VMnet15), same subnet as 
+  the rest of the lab
+
+### Networking configuration
+- **IP:** `10.10.5.12` / `255.255.255.0`, configured statically via `netplan` 
+  (Kali's default `eth0` interface)
+- **DNS:** `10.10.5.10` (DC01)
+- **Gateway:** none — same flat subnet as the rest of the lab
+
+Kali was kept isolated on the host-only network by default and only temporarily 
+switched to NAT when internet access was needed (e.g., updating tools or 
+wordlists), reverting to the static host-only configuration for all attack 
+activity.
+
+### Tooling
+No additional installation was required beyond Kali's default toolset:
+- **nmap** — host discovery and port scanning across the lab subnet
+- **Hydra** — credential brute-forcing against RDP
+- **xfreerdp** — manual RDP connection testing, used to validate connectivity 
+  and authentication independently of Hydra during troubleshooting
+
+![kali](images/kali.png)
+
+### Role in the lab
+Kali served as the sole attacker platform, used to enumerate the lab subnet, 
+identify the domain-joined Windows client as a target, and execute the RDP 
+brute-force and post-compromise activity documented in 
 [Attack Chains](attack-chains.md).
