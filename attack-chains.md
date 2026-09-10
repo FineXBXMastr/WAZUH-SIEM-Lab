@@ -204,8 +204,9 @@ Both events were captured using Wazuh's default ruleset with no custom rule
 authoring required, and included full subject/target account detail once the 
 underlying event's full document view was expanded. If a SOC analyst were to 
 see this in a real environment, it would immediately take top priority. In 
-addition to being used as means of privilege escalation, this rogue account 
+addition to being used as means for privilege escalation, this rogue account 
 can also be used as a backdoor for an attacker.
+
 ---
 
 ### Observations
