@@ -120,3 +120,104 @@ default ruleset with no custom rule authoring required.
   plaintext during a parallel Wireshark capture of the attack traffic; detection 
   relied entirely on host-based logon telemetry (via the Wazuh agent) rather than 
   network-layer payload inspection.
+
+  ---
+
+## Chain 2: Privilege Escalation via Domain Admin Account Creation
+
+### Overview
+This chain simulates a post-compromise persistence/privilege escalation action, 
+where an attacker who has already obtained valid domain credentials (via the RDP 
+brute force documented in Chain 1) uses that access to create a new, fully 
+privileged account — establishing a durable foothold independent of the originally 
+compromised user. This maps to **MITRE ATT&CK T1136.002 (Create Account: Domain 
+Account)** and **T1098 (Account Manipulation)**.
+
+**Attacker:** Kali Linux (`10.10.5.12`), connected via RDP to DC01
+**Target:** Domain Controller — DC01 (`10.10.5.10`)
+**Detection:** Wazuh Manager (`10.10.5.20`)
+
+---
+
+### Step 1 — Remote access to the Domain Controller
+
+Using `xfreerdp` from Kali, an RDP session was established directly against 
+DC01:
+
+\`\`\`bash
+xfreerdp /v:10.10.5.10 /u:administrator /d:cyber.local /p:'<password>' /cert:ignore
+\`\`\`
+
+This simulates a scenario where an attacker has escalated from an initial 
+foothold (e.g., the compromised standard user from Chain 1) to direct access on 
+the domain controller itself — the highest-value target in the environment.
+
+---
+
+### Step 2 — Create a new domain account
+
+From within the RDP session, PowerShell was used to create a new domain user 
+account:
+
+\`\`\`powershell
+New-ADUser -Name "hacked" `
+    -SamAccountName "hacked" `
+    -UserPrincipalName "hacked@cyber.local" `
+    -AccountPassword (ConvertTo-SecureString "Password123!" -AsPlainText -Force) `
+    -Enabled $true `
+    -PasswordNeverExpires $true
+\`\`\`
+
+---
+
+### Step 3 — Escalate the new account to Domain Admins
+
+The newly created account was then added to the **Domain Admins** group, granting 
+it full administrative control over the domain:
+
+\`\`\`powershell
+Add-ADGroupMember -Identity "Domain Admins" -Members "hacked"
+\`\`\`
+
+Membership was confirmed with:
+
+\`\`\`powershell
+Get-ADGroupMember -Identity "Domain Admins"
+\`\`\`
+
+![scripts](images/scripts.png)
+
+The hacked account can be view in AD Users & Computers on DC01:
+
+![profile_view](images/profile_view.png)
+
+---
+
+### Step 4 — Detection in Wazuh
+
+Both actions generated corresponding Windows Security Events, forwarded by the 
+DC01 agent and surfaced in the Wazuh dashboard (**Threat Hunting → Events**):
+
+![aadmin_logs](images/admin_logs.png)
+
+Both events were captured using Wazuh's default ruleset with no custom rule 
+authoring required, and included full subject/target account detail once the 
+underlying event's full document view was expanded. If a SOC analyst were to 
+see this in a real environment, it would immediately take top priority. This 
+account can be used as a backdoor for an attacker.
+
+---
+
+### Observations
+- This chain represents a meaningfully higher-severity scenario than Chain 1 
+  alone: rather than just detecting unauthorized access, Wazuh captured the 
+  attacker's follow-on action of establishing a second, fully privileged 
+  identity — a common real-world persistence technique used to survive 
+  password resets or account lockouts on the originally compromised credential.
+- In a production environment, an alert on **any** addition to the Domain Admins 
+  group is typically treated as a critical-severity event warranting immediate 
+  investigation, given how few legitimate changes to that group should occur 
+  outside of planned administrative activity.
+- Combined, Chain 1 and Chain 2 demonstrate a full initial-access-to-domain- 
+  compromise narrative, with detection coverage at each stage: brute-force 
+  attempt, successful unauthorized logon, and privilege escalation.
