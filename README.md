@@ -1,15 +1,56 @@
-My goal for my Wazuh SIEM Lab is to create a cybersecurity environment that might be observed in a real enterprise or business. My plan was to gain experience with a real SIEM by employing my existing system administration, virtualization, and penetration testing skills as well as new skills to create this environment and then initiate attack chains that can be monitored in the SIEM. To do so, I have configured four virtual machines with VMware to operate on their own virtual network. The virtual machines are as follows:
+# WAZUH-SIEM-Lab
 
-Windows Server 2022 - Acts as the domain controller of the cyber.local domain
-Windows 10 - A client machine under the jurisdiction of the domain controller. Accounts configured through Active Directory on the DC will login on this machine
-Ubuntu Server 26.04 - The machine responsible for the Wazuh service. Wazuh is hosted through this vm and can be accessed via my web browser
-Kali Linux - A machine to be used as an attacker. RDP brute force and rouge admin account creation, as well as other attack chains, will be done through here
+## Overview
 
-The four VMs are all on the same subnet, that being 10.10.5.0/24. The IP addresses are as follows:
+This repository documents a self-hosted Active Directory and SIEM lab built to 
+gain hands-on, practical experience with the kind of environment a security 
+analyst or detection engineer works in day to day. The lab was built entirely 
+on a single laptop using VMware Workstation Pro, simulating a small enterprise 
+network complete with a domain controller, a domain-joined client, an attacker 
+system, and a SIEM for log ingestion and alerting.
 
-Windows Server 2022 - 10.10.5.10
-Windows 10 - 10.10.5.11
-Ubuntu Server - 10.10.5.20
-Kali - 10.10.5.12 (in a real environment, Kali, as an external attacker machine, would be on a different subnet)
+Rather than relying on paid cloud platforms, this project was built with free 
+and open-source tooling to demonstrate that the core skills of detection 
+engineering — attack simulation, log pipeline configuration, and alert 
+triage — can be practiced end to end without significant cost.
 
-Details for the setup of the lab, including DC promotion, AD administration, Wazuh setup, agent deployment, and IP configuration are included in this repository. Attack chain details are included as well.
+## What this project demonstrates
+
+- Standing up Active Directory Domain Services from scratch, including domain 
+  controller promotion, DNS configuration, and domain user management
+- Joining and managing a Windows client within a domain environment
+- Deploying an open-source SIEM (Wazuh) and configuring agent-based log 
+  forwarding from Windows hosts
+- Simulating realistic attacker behavior (credential brute-forcing, privilege 
+  escalation) using industry-standard offensive tooling
+- Verifying that simulated attacks are visible and detectable within the SIEM, 
+  using default detection rules with no custom rule authoring required
+- Troubleshooting real infrastructure issues encountered along the way — 
+  virtual networking conflicts, service failures, and configuration errors — 
+  which reflects the kind of hands-on problem-solving this work actually 
+  involves
+
+## Documentation
+
+- [Lab Setup](docs/lab-setup.md) — full breakdown of each virtual machine, its 
+  configuration, and its role in the lab
+- [Attack Chains](docs/attack-chains.md) — documented attack scenarios, the 
+  steps taken to execute them, and the resulting detections observed in Wazuh
+
+## Environment summary
+
+| Role | OS | Static IP |
+|---|---|---|
+| Domain Controller | Windows Server 2022 Standard | `10.10.5.10` |
+| Domain Client | Windows 10 Enterprise | `10.10.5.11` |
+| SIEM (Wazuh Manager) | Ubuntu Server 24.04 | `10.10.5.20` |
+| Attacker | Kali Linux | `10.10.5.12` |
+
+All virtual machines run on VMware Workstation Pro, connected to an isolated 
+host-only network segment separate from the host machine's home network.
+
+## Future work
+
+Planned additions to this lab include further attack scenarios, expanded 
+detection rule tuning, and additional network infrastructure to build out the 
+environment's segmentation and defense-in-depth capabilities.
