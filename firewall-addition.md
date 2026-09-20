@@ -104,6 +104,15 @@ follows:
 
 ![failed](images/failed.png)
 
+In the webConfigurator, going to Status -> System Logs -> Firewall will pull
+up the firewall logs of recent events. The failed ping attempts and connection
+attempts from Kali can be seen. The entries with ICMP as the protocol are the 
+ping attempts, and the UDP entries are attempted connections to DC01.
+
+![status_logs](images/status_logs.png)
+
+The default implicit deny rule can be seen under the "Rule" column as well.
+
 This confirms the firewall is functioning as intended: traffic originating 
 from the attacker segment cannot reach the protected LAN without an explicit 
 rule permitting it. No such rule currently exists, meaning the attack chains 
