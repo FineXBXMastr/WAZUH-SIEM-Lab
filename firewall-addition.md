@@ -85,8 +85,6 @@ follows:
   (`10.10.6.12`) succeeded, confirming the WAN interface itself is correctly 
   configured and reachable outbound.
 
-![nmcli](images/nmcli.png)
-
 - **Kali → pfSense:** a ping from Kali to pfSense's WAN address (`10.10.6.2`) 
   failed, consistent with pfSense's default-deny WAN policy silently dropping 
   unsolicited inbound ICMP.
