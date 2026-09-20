@@ -26,13 +26,16 @@ protected lab segment (DC01, client, Wazuh), allowing:
 
 ## Topology change
 
-A new host-only network was created to isolate the attacker from the protected 
-segment, with pfSense acting as the router/firewall between them:
+A new host-only network was created through VMware to isolate the attacker 
+from the protected segment, with pfSense acting as the router/firewall between them:
 
 | Network | VMnet | Subnet | Hosts |
 |---|---|---|---|
 | Protected (LAN) | VMnet15 | `10.10.5.0/24` | DC01, Windows 10 client, Wazuh manager, pfSense LAN |
 | Attacker (WAN) | VMnet16 | `10.10.6.0/24` | Kali, pfSense WAN |
+
+This alos more accurately reflects a real enterprise environment, where 
+machines used by employees would be isolated from outside.
 
 DHCP was disabled on both VMnets, consistent with the rest of the lab's 
 manually-assigned static addressing scheme.
