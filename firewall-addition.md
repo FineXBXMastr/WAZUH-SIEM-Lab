@@ -57,6 +57,10 @@ Both NICs can be seen during the pfSense configuration:
 - **WAN:** `10.10.6.2/24`, no upstream gateway (isolated segment, not a real 
   internet uplink)
 
+After assigning IP schemes to them:
+
+![ipscheme](images/ipscheme.png)
+
 pfSense rules are managed through the webConfigurator hosted through https:
 
 ![log](images/log.png)
