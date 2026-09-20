@@ -102,7 +102,7 @@ follows:
 - **Manual RDP connection re-attempt:** a manual `xfreerdp` connection attempt 
   from Kali to the same target was likewise blocked, confirming the failure 
   was due to the firewall's default policy rather than an issue specific to 
-  Hydra. Both attemps can be seen as failed below:
+  Hydra. Both attempts can be seen as failed below:
 
 ![failed](images/failed.png)
 
