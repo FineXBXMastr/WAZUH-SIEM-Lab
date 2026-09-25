@@ -122,9 +122,15 @@ Two paths forward were identified to address the missing source-IP field:
 
 ![images](images/rule_2.png)
 
-The logs in the SIEM can be viewed as intended:
+After this change was made, the RDP brute force was re-run like normal. 
+The logs in the SIEM can be viewed as expected:
 
 ![warning](images/warning.png)
+
+In a normal environment, a SOC analyst seeing this would need to perform triage
+and evaluate whether this indicates an attack or a normal event by checking source
+and destination addresses. A security engineer could further tune the SIEM to 
+filter out non-important events.
 
 ## Observations
 
