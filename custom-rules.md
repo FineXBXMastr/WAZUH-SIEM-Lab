@@ -51,7 +51,7 @@ Custom Wazuh rules are defined in `/var/ossec/etc/rules/local_rules.xml` on
 the Wazuh manager. The following rule was added inside the existing 
 `<group>` block:
 
-![rule_1](images/rule_1.png)
+![bestrule](images/bestrule.png)
 
 **Logic:**
 - `if_matched_sid` — triggers based on the existing "Logon Failure" rule 
