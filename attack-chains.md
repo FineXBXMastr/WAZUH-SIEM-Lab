@@ -305,6 +305,8 @@ event data, including:
 
 ![kerb_4](images/kerb_4.png)
 
+![json](images/json.png)
+
 **Detection observation:** unlike the RDP brute-force chain, a single 4769 
 event for `svc-sql` is not, on its own, distinguishable from routine domain 
 activity. Kerberos service ticket requests occur constantly as part of 
