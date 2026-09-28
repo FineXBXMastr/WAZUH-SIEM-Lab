@@ -225,8 +225,6 @@ can also be used as a backdoor for an attacker.
 
 ---
 
----
-
 ## Chain 3: Kerberoasting
 
 ### Overview
