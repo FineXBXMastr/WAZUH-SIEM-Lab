@@ -222,3 +222,134 @@ can also be used as a backdoor for an attacker.
 - Combined, Chain 1 and Chain 2 demonstrate a full initial-access-to-domain- 
   compromise narrative, with detection coverage at each stage: brute-force 
   attempt, successful unauthorized logon, and privilege escalation.
+
+---
+
+---
+
+## Chain 3: Kerberoasting
+
+### Overview
+This chain simulates a Kerberoasting attack, in which an already-compromised, 
+low-privilege domain account is used to extract a crackable service ticket for 
+a separate, higher-value service account — without requiring any additional 
+privilege escalation to perform the extraction itself. This maps to 
+**MITRE ATT&CK T1558.003 (Steal or Forge Kerberos Tickets: Kerberoasting)**.
+
+**Attacker:** Kali Linux (`10.10.6.12`), authenticating as the previously 
+compromised domain user Dante
+**Target:** Domain Controller — DC01 (`10.10.5.10`)
+**Detection:** Wazuh Manager (`10.10.5.20`)
+
+---
+
+### Step 1 — Creating a vulnerable service account
+
+A domain service account was created on DC01 to represent a typical 
+over-privileged, weakly-configured service account, a common real-world target 
+for this attack. A Service Principal Name (SPN) was registered against the 
+account, simulating a SQL Server instance — the step that makes the account 
+eligible for a Kerberos service ticket request from any authenticated domain user:
+
+![kerb_1](images/kerb_1.png)
+
+---
+
+### Step 2 — Requesting the ticket from Kali
+
+Using Impacket's `GetUserSPNs.py`, the domain was enumerated for accounts with 
+registered SPNs, and a service ticket was requested for `svc-sql`, 
+authenticating as Dante — the same low-privilege account compromised in 
+Chain 1:
+
+![kerb_2](images/kerb_2.png)
+
+The tool listed `svc-sql` and its SPN, and returned a Kerberos TGS-REP hash in 
+the standard `$krb5tgs$` format, saved to `svc-sql.hash` for offline cracking.
+
+**Notable finding:** no elevated privileges were required to perform this 
+step. Kerberos service ticket requests are available by design to any 
+authenticated domain user, regardless of their relationship to the target 
+service account — this is the mechanism that makes Kerberoasting broadly 
+exploitable from even a low-privilege starting foothold.
+
+---
+
+### Step 3 — Confirming the event on DC01
+
+The resulting Kerberos service ticket request was visible in DC01's Event 
+Viewer as **Event ID 4769** (A Kerberos service ticket was requested), logged 
+under Windows Logs → Security.
+
+![kerb_3](images/kerb_3.png)
+
+---
+
+### Step 4 — Locating the event in Wazuh
+
+The event was located in the Wazuh dashboard (**Threat Hunting → Events**) by 
+searching for the service account name directly:
+
+\`\`\`
+"svc-sql"
+\`\`\`
+
+Individual 4769 events were confirmed present and fully detailed in the raw 
+event data, including:
+
+- `data.win.system.eventID`: 4769
+- `data.win.eventdata.serviceName`: svc-sql
+- `data.win.eventdata.ticketEncryptionType`: encryption type used for the 
+  ticket, varying between test runs (both AES and RC4 tickets were observed 
+  across separate attempts)
+
+![kerb_4](images/kerb_4.png)
+
+**Detection observation:** unlike the RDP brute-force chain, a single 4769 
+event for `svc-sql` is not, on its own, distinguishable from routine domain 
+activity. Kerberos service ticket requests occur constantly as part of 
+normal AD operation. No default Wazuh rule flags this event as suspicious, and 
+a meaningful detection would need to correlate signals beyond a single log 
+line: the volume and breadth of SPNs requested by one source in a short 
+window, whether the requesting account has any legitimate relationship to the 
+service, and the ticket's encryption type relative to what the domain 
+otherwise supports.
+
+---
+
+### Step 5 — Cracking the extracted ticket
+
+The extracted hash was cracked offline using Hashcat, selecting the mode 
+matching the ticket's encryption type:
+
+\`\`\`bash
+hashcat -m 13100 -a 0 svc-sql.hash /usr/share/wordlists/rockyou.txt
+\`\`\`
+
+The cracked password was retrieved with:
+
+![kerb_5](images/kerb_5.png)
+
+The account's password (`P@ssw0rd123`) was successfully recovered, confirming 
+the full attack path: a low-privilege compromised account was used to extract 
+a service account's password hash without further exploitation, and that 
+hash was subsequently cracked offline to obtain valid credentials for the 
+service account.
+
+---
+
+### Observations
+- This chain demonstrates a realistic privilege-widening path distinct from 
+  Chain 2's direct privilege escalation — rather than granting Dante's 
+  account more rights directly, the attacker pivots to compromising an 
+  entirely separate, higher-value account via a design-level Kerberos 
+  behavior rather than a vulnerability or misconfiguration in the traditional 
+  sense.
+- In a hardened production environment, this attack is more effectively 
+  addressed through prevention than detection: strong, randomly-generated 
+  service account passwords, Group Managed Service Accounts (gMSAs), and 
+  disabling legacy RC4 support remove the exploitable weakness rather than 
+  relying on catching the ticket request after the fact.
+- This lab's service account was intentionally left in a default, 
+  non-hardened configuration in order to study the attack's actual telemetry 
+  and detection difficulty, rather than to model best-practice AD security.
